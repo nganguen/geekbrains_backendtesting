@@ -44,18 +44,19 @@ public class BookController {
     // http://localhost:8189/store/api/v1/books/find?author_name=Harper_Lee
     @GetMapping("/find")
     @ApiOperation("Returns all books by the author in request")
-    public List<BookDto> getBooksByAuthorName(@RequestParam String author_name) {
-        List<BookDto> all = getAllBooks();
-        return all.stream().filter(book -> book.getAuthorName().equals(author_name)).collect(Collectors.toList());
+    public List<BookDto> getBooksByAuthorName(@RequestParam(name = "author_name") String authorName) {
+        //List<BookDto> all = getAllBooks();
+        //return all.stream().filter(book -> book.getAuthorName().equals(authorName)).collect(Collectors.toList());
+        return bookService.getAllBookByAuthorName(authorName).stream().map(BookDto::new).collect(Collectors.toList());
     }
 
     @PostMapping
     @ApiOperation("Adds a new book. If id != null, then throw bad request response")
-    public ResponseEntity<?> addNewBook(@RequestBody Book b) {
+    public ResponseEntity<?> addNewBook(@RequestBody BookDto b) {
         if (b.getId() != null) {
             return new ResponseEntity<>(new MarketError(HttpStatus.BAD_REQUEST.value(), "Id must be null for new entity"), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(bookService.saveBook(b), HttpStatus.CREATED);
+        return new ResponseEntity<>(new BookDto(bookService.saveBook(b)), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

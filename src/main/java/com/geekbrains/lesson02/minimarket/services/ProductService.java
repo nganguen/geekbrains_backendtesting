@@ -1,5 +1,6 @@
 package com.geekbrains.lesson02.minimarket.services;
 
+import com.geekbrains.lesson02.minimarket.dto.ProductDto;
 import com.geekbrains.lesson02.minimarket.entities.Product;
 import com.geekbrains.lesson02.minimarket.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +12,12 @@ import java.util.Optional;
 @Service
 public class ProductService {
     private ProductRepository productRepository;
+    private CategoryService categoryService;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, CategoryService categoryService) {
         this.productRepository = productRepository;
+        this.categoryService = categoryService;
     }
 
     public List<Product> getAllProducts() {
@@ -30,6 +33,15 @@ public class ProductService {
     }
 
     public Product save(Product product) {
+        return productRepository.save(product);
+    }
+
+    public Product saveProductDto(ProductDto productDto) {
+        Product product = new Product();
+        product.setId(productDto.getId());
+        product.setTitle(productDto.getTitle());
+        product.setPrice(productDto.getPrice());
+        product.setCategory(categoryService.findByTitle(productDto.getCategoryTitle()).get());
         return productRepository.save(product);
     }
 

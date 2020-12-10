@@ -28,4 +28,8 @@ public class AuthorService {
     public Author saveNewAuthor(Author author) {
         return authorRepository.save(author);
     }
+
+    public Optional<Author> findByName(String name) {
+        return authorRepository.findByName(name);
+    }
 }
