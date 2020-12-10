@@ -4,11 +4,12 @@ import com.geekbrains.lesson02.minimarket.dto.ProductDto;
 import com.geekbrains.lesson02.minimarket.entities.Product;
 import com.geekbrains.lesson02.minimarket.exceptions.MarketError;
 import com.geekbrains.lesson02.minimarket.exceptions.ResourceNotFoundException;
+import com.geekbrains.lesson02.minimarket.services.CategoryService;
 import com.geekbrains.lesson02.minimarket.services.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,16 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v1/products")
 @Api("Set of endpoints for products")
+@RequiredArgsConstructor
 public class ProductController {
-    private ProductService productService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
 
-    @Autowired
-    public ProductController(ProductService productService) {
+    /*@Autowired
+    public ProductController(ProductService productService, CategoryService categoryService) {
         this.productService = productService;
-    }
+        this.categoryService = categoryService;
+    }*/
 
     @GetMapping
     @ApiOperation("Returns all products")
@@ -46,6 +50,10 @@ public class ProductController {
         if (p.getId() != null) {
             return new ResponseEntity<>(new MarketError(HttpStatus.BAD_REQUEST.value(), "Id must be null for new entity"), HttpStatus.BAD_REQUEST);
         }
+        if ((p.getTitle() == null) | (p.getPrice() == 0) | (p.getCategoryTitle() == null) |
+                (p.getCategoryTitle() == null) | (categoryService.findByTitle(p.getCategoryTitle()).isEmpty())) {
+            return new ResponseEntity<>(new MarketError((HttpStatus.BAD_REQUEST.value()), "Bad request data"), HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(new ProductDto(productService.saveProductDto(p)), HttpStatus.CREATED);
     }
 
@@ -57,6 +65,10 @@ public class ProductController {
         }
         if (!productService.existsById(p.getId())) {
             return new ResponseEntity<>(new MarketError(HttpStatus.BAD_REQUEST.value(), "Product with id: " + p.getId() + " doesn't exist"), HttpStatus.BAD_REQUEST);
+        }
+        if ((p.getTitle() == null) | (p.getPrice() == 0) | (p.getCategoryTitle() == null) |
+                (p.getCategoryTitle() == null) | (categoryService.findByTitle(p.getCategoryTitle()).isEmpty())) {
+            return new ResponseEntity<>(new MarketError((HttpStatus.BAD_REQUEST.value()), "Bad request data"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(new ProductDto(productService.saveProductDto(p)), HttpStatus.OK);
     }

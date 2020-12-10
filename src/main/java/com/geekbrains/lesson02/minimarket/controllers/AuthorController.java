@@ -7,7 +7,7 @@ import com.geekbrains.lesson02.minimarket.exceptions.ResourceNotFoundException;
 import com.geekbrains.lesson02.minimarket.services.AuthorService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +18,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v1/authors")
 @Api("Set of endpoints for authors")
+@RequiredArgsConstructor
 public class AuthorController {
-    private AuthorService authorService;
-
-    @Autowired
-    public AuthorController(AuthorService authorService) {
-        this.authorService = authorService;
-    }
+    private final AuthorService authorService;
 
     @GetMapping
     @ApiOperation("Returns all authors")

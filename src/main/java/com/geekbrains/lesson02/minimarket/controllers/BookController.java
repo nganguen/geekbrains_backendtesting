@@ -4,11 +4,13 @@ import com.geekbrains.lesson02.minimarket.dto.BookDto;
 import com.geekbrains.lesson02.minimarket.entities.Book;
 import com.geekbrains.lesson02.minimarket.exceptions.MarketError;
 import com.geekbrains.lesson02.minimarket.exceptions.ResourceNotFoundException;
+import com.geekbrains.lesson02.minimarket.services.AuthorService;
 import com.geekbrains.lesson02.minimarket.services.BookService;
+import com.geekbrains.lesson02.minimarket.services.CategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +21,11 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/v1/books")
 @Api("Set of endpoints for books")
+@RequiredArgsConstructor
 public class BookController {
-    private BookService bookService;
-
-    @Autowired
-    public BookController(BookService bookService) {
-        this.bookService = bookService;
-    }
+    private final BookService bookService;
+    private final CategoryService categoryService;
+    private final AuthorService authorService;
 
     @GetMapping
     @ApiOperation("Returns all books")
@@ -55,6 +55,10 @@ public class BookController {
     public ResponseEntity<?> addNewBook(@RequestBody BookDto b) {
         if (b.getId() != null) {
             return new ResponseEntity<>(new MarketError(HttpStatus.BAD_REQUEST.value(), "Id must be null for new entity"), HttpStatus.BAD_REQUEST);
+        }
+        if ((b.getTitle() == null) | (b.getPrice() == 0) | (b.getCategoryTitle() == null) | (b.getAuthorName() == null) |
+                (categoryService.findByTitle(b.getCategoryTitle()).isEmpty()) | (authorService.findByName(b.getAuthorName()).isEmpty())) {
+            return new ResponseEntity<>(new MarketError(HttpStatus.BAD_REQUEST.value(), "Bad request data"), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(new BookDto(bookService.saveBook(b)), HttpStatus.CREATED);
     }
